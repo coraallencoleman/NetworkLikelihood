@@ -4,6 +4,11 @@ args <- commandArgs()
 
 library(dplyr, warn.conflicts = FALSE, quietly = TRUE)
 
+graph1txt <- "fac_1.txt"
+graph2txt <- "fac_1_predicted.txt"
+directed = 0
+setwd("/Users/cora/git_repos/NetworkLikelihood/computational_networks")
+
 compareGraphs <- function(graph1txt, graph2txt, directed){
   # Compare 2 graphs using precision, recall and F-score.
   # Args:
@@ -27,16 +32,17 @@ compareGraphs <- function(graph1txt, graph2txt, directed){
   predictedEdges <- nrow(graph2)
   trueEdges <- nrow(graph1)
   if (directed == 1){
-    correctEdges <- trueEdges - nrow(dplyr::setdiff(graph2, graph1))
+    correctEdges <- trueEdges - nrow(dplyr::setdiff(graph1, graph2))
   } else {
-    diff <- nrow(dplyr::setdiff(graph2, graph1))
-    diffSet <- dplyr::setdiff(graph2, graph1)
-    #check if opposite is in graph1
+    correctEdges <- trueEdges - nrow(dplyr::setdiff(graph1, graph2))
+    diff <- nrow(dplyr::setdiff(graph1, graph2))
+    diffSet <- dplyr::setdiff(graph1, graph2) #edges missing from graph2
+    #check if missing's opposite is in graph2 list
     diffSet$tmp <- diffSet$V1
     diffSet$V1 <- diffSet$V2
     diffSet$V2 <- diffSet$tmp
-    switchCheckN <- nrow(dplyr::setdiff(diffSet[,1:2], graph1))
-    correctEdges <- trueEdges - (diff -switchCheckN)
+    switchCorrect <- predictedEdges - nrow(dplyr::setdiff(graph2, diffSet[,1:2]))
+    correctEdges <- correctEdges + switchCorrect
   }
 
   precision <- correctEdges/predictedEdges 
@@ -49,3 +55,5 @@ compareGraphs <- function(graph1txt, graph2txt, directed){
 }
 
 compareGraphs(args[6], args[7], args[8])
+
+#put /u/medinfo/bmi826/2018-hw//hw1/username
